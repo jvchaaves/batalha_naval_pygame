@@ -3,6 +3,74 @@ import cores
 
 pygame.init()
 
+# CONFIGS GERAIS
+screen = pygame.display.set_mode((1280, 720))
+pygame.display.set_caption('Batalha Naval')
+
+# FONTES
+fonte = pygame.font.Font('batalha_naval_pygame/fonts/CHEDROS Regular.ttf', 72)
+fonte2 = pygame.font.Font('batalha_naval_pygame/fonts/CHEDROS Regular.ttf', 18)
+
+# TEXTOS E BOTÕES DO MENU
+texto1 = fonte.render('COMEÇAR', True, (255, 255, 255))
+texto2 = fonte.render('CONFIGURAÇÕES', True, (255, 255, 255))
+texto3 = fonte2.render('um trabalho feito por: Nathan David, João Rafael, João Vitor Chaves e Diego Sousa', True, (255, 255, 255))
+
+tamanhof_1 = 20
+tamanhof_2 = 10
+
+rect_texto1 = texto1.get_rect(topleft=(60, 520))
+rect_texto2 = texto2.get_rect(topleft=(60, 620))
+
+rect_texto1 = pygame.Rect(rect_texto1.left - tamanhof_1, rect_texto1.top - tamanhof_2, rect_texto1.width + 2 * tamanhof_1, rect_texto1.height + 2 * tamanhof_2)
+rect_texto2 = pygame.Rect(rect_texto2.left - tamanhof_1, rect_texto2.top - tamanhof_2, rect_texto2.width + 2 * tamanhof_1, rect_texto2.height + 2 * tamanhof_2)
+rect_texto3 = texto3.get_rect(topleft=(770, 700))
+
+texto1_pos = texto1.get_rect(center=rect_texto1.center)
+texto2_pos = texto2.get_rect(center=rect_texto2.center)
+
+img = pygame.image.load('batalha_naval_pygame/images/capa.jpg').convert_alpha()
+img = pygame.transform.scale(img, (1280, 720))
+
+cor_fundo_botao = (100, 50, 16)
+cor_fundo_botao_m = (80, 40, 6)
+raio_borda = 20
+largura_borda = 5
+
+def desenhar_botao(screen, cor, rect, raio_borda, largura_borda):
+    pygame.draw.rect(screen, (0, 0, 0), rect, border_radius=raio_borda)
+    pygame.draw.rect(screen, cor, rect.inflate(-largura_borda*2, -largura_borda*2), border_radius=raio_borda)
+
+# MENU LOOP
+menu_ativo = True
+while menu_ativo:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            exit()
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_x, mouse_y = event.pos
+
+            if rect_texto1.collidepoint(mouse_x, mouse_y):
+                menu_ativo = False
+
+            if rect_texto2.collidepoint(mouse_x, mouse_y):
+                print("Você clicou em CONFIGURAÇÕES!")
+
+    screen.blit(img, (0, 0))
+    mouse_x, mouse_y = pygame.mouse.get_pos()
+
+    desenhar_botao(screen, cor_fundo_botao_m if rect_texto1.collidepoint(mouse_x, mouse_y) else cor_fundo_botao, rect_texto1, raio_borda, largura_borda)
+    desenhar_botao(screen, cor_fundo_botao_m if rect_texto2.collidepoint(mouse_x, mouse_y) else cor_fundo_botao, rect_texto2, raio_borda, largura_borda)
+
+    screen.blit(texto1, texto1_pos)
+    screen.blit(texto2, texto2_pos)
+    screen.blit(texto3, rect_texto3)
+    pygame.display.update()
+
+# =================== JOGO COMEÇA AQUI =====================
+
 background = pygame.image.load(r'C:\Users\joaov\OneDrive\Área de Trabalho\programação\pygame\batalha_naval_pygame\background.jpg')  
 background = pygame.transform.scale(background, (1280, 720))
 
