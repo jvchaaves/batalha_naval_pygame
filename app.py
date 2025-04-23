@@ -3,6 +3,9 @@ import cores
 
 pygame.init()
 
+background = pygame.image.load(r'C:\Users\joaov\OneDrive\Área de Trabalho\programação\pygame\batalha_naval_pygame\background.jpg')  
+background = pygame.transform.scale(background, (1280, 720))
+
 def CreateGameGrid(rows, cols, cellsize, pos):
     startx = pos [0]
     starty = pos[1]
@@ -21,24 +24,28 @@ def updategamelogic(rows, cols):
     return [[' ' for _ in range(cols)] for _ in range(rows)]
 
 def showgrid(window, cellsize, player1grid, player2grid, pgamelogic,p2gamelogic):
-    font = pygame.font.SysFont(None, 36)
-    title1 = font.render('Jogador 1', True, cores.Vermelho)
-    window.blit(title1, (50, 20))
-    title2 = font.render('Jogador 2', True, cores.Verde)
-    window.blit(title2, (1280 - (cols * cellsize) - 50, 20))
+    
+    window.blit(background,(0,0))
+    
+    title_font = pygame.font.SysFont('Arial', 48, bold=True)
+    font = pygame.font.SysFont('Arial', 24, bold=  True)
+    title1 = title_font.render('JOGADOR 1', True, cores.VermelhoVinho)
+    window.blit(title1, (50, 15))
+    title2 = title_font.render('JOGADOR 2', True, cores.VermelhoVinho)
+    window.blit(title2, (1280 - (cols * cellsize) - 50, 15))
 
     for row in range(10):
-        letra = font.render(chr(65 + row), True, cores.Preto)
-        window.blit(letra, (25, 55 + row * cellsize))
+        letra = font.render(chr(65 + row), True, cores.Bege)
+        window.blit(letra, (25, 80 + row * cellsize))
     for col in range(10):
-        numero = font.render(str(col + 1), True, cores.Preto)
-        window.blit(numero, (55 + col * cellsize, 570))
+        numero = font.render(str(col + 1), True, cores.Bege)
+        window.blit(numero, (65 + col * cellsize, 570))
 
     for row in range(10):
-        letra = font.render(chr(65 + row), True, cores.Preto)
-        window.blit(letra, (1280 - (cols * cellsize) - 85, 55 + row * cellsize))
+        letra = font.render(chr(65 + row), True, cores.Bege)
+        window.blit(letra, (1280 - (cols * cellsize) - 85, 80 + row * cellsize))
     for col in range(10):
-        numero = font.render(str(col + 1), True, cores.Preto)
+        numero = font.render(str(col + 1), True, cores.Bege)
         window.blit(numero, (1280 - (cols * cellsize) - 50 + 50 + (col * cellsize) + cellsize//2 - 60, 570))
     
     for row in range(rows):
@@ -149,11 +156,10 @@ cellsize = 50
 
 screen = pygame.display.set_mode((1280, 720))
 
-
-pgamegrid = CreateGameGrid(rows, cols, cellsize, (50, 50))
+pgamegrid = CreateGameGrid(rows, cols, cellsize, (60, 70))
 pgamelogic = updategamelogic(rows, cols)
 
-p2gamegrid = CreateGameGrid(rows, cols, cellsize, (1280 - (rows * cellsize) - 50, 50))
+p2gamegrid = CreateGameGrid(rows, cols, cellsize, (1280 - (rows * cellsize) - 60, 70))
 p2gamelogic = updategamelogic(rows, cols)
 
 printgamelogic(pgamelogic, p2gamelogic)
@@ -161,17 +167,17 @@ printgamelogic(pgamelogic, p2gamelogic)
 for player, (grid, logic) in enumerate([(pgamegrid, pgamelogic), (p2gamegrid, p2gamelogic)], start=1):
     for ship_name, ship_size in ships.items():
         place_ship(grid, logic, ship_name, ship_size, player)
-        screen.fill(cores.AzulTurquesa)
         showgrid(screen, cellsize, pgamegrid, p2gamegrid,pgamelogic,p2gamelogic)
         pygame.display.update()
+
+
 
 running = True
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-
-    screen.fill(cores.AzulTurquesa)    
+ 
     showgrid(screen, cellsize, pgamegrid, p2gamegrid,p2gamelogic,pgamelogic)
 
 for rowidx, row in enumerate(pgamegrid):
