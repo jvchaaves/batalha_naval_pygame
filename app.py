@@ -3,15 +3,15 @@ import cores
 
 pygame.init()
 
-pygame.mixer.music.load("batalha_naval_pygame/musicas/musica_de_fundo.mp3")
+pygame.mixer.music.load("musicas/musica_de_fundo.mp3")
 pygame.mixer.music.set_volume(0.2)  
 pygame.mixer.music.play(-1)
 
 screen = pygame.display.set_mode((1280, 720))
 pygame.display.set_caption('Batalha Naval')
 
-fonte = pygame.font.Font('batalha_naval_pygame/fonts/CHEDROS Regular.ttf', 72)
-fonte2 = pygame.font.Font('batalha_naval_pygame/fonts/CHEDROS Regular.ttf', 18)
+fonte = pygame.font.Font('fonts/CHEDROS Regular.ttf', 72)
+fonte2 = pygame.font.Font('fonts/CHEDROS Regular.ttf', 18)
 
 texto1 = fonte.render('COMEÇAR', True, (255, 255, 255))
 texto2 = fonte.render('CONFIGURAÇÕES', True, (255, 255, 255))
@@ -30,7 +30,7 @@ rect_texto3 = texto3.get_rect(topleft=(770, 700))
 texto1_pos = texto1.get_rect(center=rect_texto1.center)
 texto2_pos = texto2.get_rect(center=rect_texto2.center)
 
-img = pygame.image.load('batalha_naval_pygame/images/capa.jpg').convert_alpha()
+img = pygame.image.load('images/capa.jpg').convert_alpha()
 img = pygame.transform.scale(img, (1280, 720))
 
 cor_fundo_botao = (100, 50, 16)
@@ -73,7 +73,7 @@ while menu_ativo:
 #====================================================== JOGO COMEÇA AQUI ================================================================
 
 
-background = pygame.image.load("batalha_naval_pygame/images/background.jpg") 
+background = pygame.image.load("images/background.jpg") 
 background = pygame.transform.scale(background, (1280, 720))
 
 cellsize = 50
@@ -81,9 +81,9 @@ cellsize = 50
 screen = pygame.display.set_mode((1280, 720))
 pygame.display.set_caption('Batalha Naval')
 
-imagem_explosao = pygame.image.load("batalha_naval_pygame/images/explosão.png")
+imagem_explosao = pygame.image.load("images/explosão.png")
 imagem_explosao = pygame.transform.scale(imagem_explosao, (cellsize, cellsize))
-explosao_sound = pygame.mixer.Sound("batalha_naval_pygame/musicas/explosao.mp3")
+explosao_sound = pygame.mixer.Sound("musicas/explosao.mp3")
 explosao_sound.set_volume(0.05)
 
 
@@ -101,15 +101,45 @@ def CreateGameGrid(rows, cols, cellsize, pos):
         starty += cellsize
     return cordGrid
 
+def render_player_ships(window, grid, logic, ship_types, rows, cols, ships_dict, ship_images_dict):
+    drawn = set()
+    for row in range(rows):
+        for col in range(cols):
+            if (row, col) in drawn:
+                continue
+                
+            if logic[row][col] == 'S' and ship_types[row][col] != ' ':
+                ship_name = ship_types[row][col]
+                ship_size = ships_dict[ship_name]
+                
+                if col + ship_size <= cols:
+                    if all(ship_types[row][col+i] == ship_name for i in range(ship_size)):
+                        orientation = "H"
+                        if ship_name in ship_images_dict and orientation in ship_images_dict[ship_name]:
+                            window.blit(ship_images_dict[ship_name][orientation], grid[row][col])
+                        drawn.update((row, col+i) for i in range(ship_size))
+                        continue
+                
+                if row + ship_size <= rows:
+                    if all(ship_types[row+i][col] == ship_name for i in range(ship_size)):
+                        orientation = "V"
+                        if ship_name in ship_images_dict and orientation in ship_images_dict[ship_name]:
+                            window.blit(ship_images_dict[ship_name][orientation], grid[row][col])
+                        drawn.update((row+i, col) for i in range(ship_size))
+
+
 def updategamelogic(rows, cols):
     return [[' ' for _ in range(cols)] for _ in range(rows)]
 
+show_ships = True
+
 def showgrid(window, cellsize, player1grid, player2grid, pgamelogic, p2gamelogic, rows, cols):
-    
-    window.blit(background,(0,0))
-    
+    global show_ships
+
+    window.blit(background, (0, 0))
+
     title_font = pygame.font.SysFont('Arial', 48, bold=True)
-    font = pygame.font.SysFont('Arial', 24, bold=  True)
+    font = pygame.font.SysFont('Arial', 24, bold=True)
     title1 = title_font.render('JOGADOR 1', True, cores.VermelhoVinho)
     window.blit(title1, (50, 15))
     title2 = title_font.render('JOGADOR 2', True, cores.VermelhoVinho)
@@ -127,78 +157,26 @@ def showgrid(window, cellsize, player1grid, player2grid, pgamelogic, p2gamelogic
         window.blit(letra, (1280 - (cols * cellsize) - 85, 80 + row * cellsize))
     for col in range(10):
         numero = font.render(str(col + 1), True, cores.Bege)
-        window.blit(numero, (1280 - (cols * cellsize) - 50 + 50 + (col * cellsize) + cellsize//2 - 60, 570))
-    
-    drawn_cells = set()
-    for row in range(rows):
-        for col in range(cols):
-            if pgamelogic[row][col] == 'S' and (row, col) not in drawn_cells:
-                ship_name = ship_types_p1[row][col]
-                ship_size = ships[ship_name]
-                x, y = player1grid[row][col]
+        window.blit(numero, (1280 - (cols * cellsize) - 50 + 50 + (col * cellsize) + cellsize // 2 - 60, 570))
 
-                is_horizontal = False
-                is_vertical = False
-                
-                if col + ship_size - 1 < cols:
-                    if all(pgamelogic[row][col+i] == 'S' for i in range(ship_size)):
-                        is_horizontal = True
-    
-                if not is_horizontal and row + ship_size - 1 < rows:
-                    if all(pgamelogic[row+i][col] == 'S' for i in range(ship_size)):
-                        is_vertical = True
-                
-                if is_horizontal:
-                    orientation = "H"
-                    ship_cells = [(row, col+i) for i in range(ship_size)]
-                    window.blit(ship_images[ship_name][orientation], (x, y))
-                    drawn_cells.update(ship_cells)
-                elif is_vertical:
-                    orientation = "V"
-                    ship_cells = [(row+i, col) for i in range(ship_size)]
-                    window.blit(ship_images[ship_name][orientation], (x, y))
-                    drawn_cells.update(ship_cells)
+    if show_ships:
+        render_player_ships(screen, player1grid, pgamelogic, ship_types_p1, rows, cols, ships, ship_images)
+        render_player_ships(screen, player2grid, p2gamelogic, ship_types_p2, rows, cols, ships, ship_images)
 
-    drawn_cells.clear()
-    for row in range(rows):
-        for col in range(cols):
-            if p2gamelogic[row][col] == 'S' and (row, col) not in drawn_cells:
-                ship_name = ship_types_p2[row][col]
-                ship_size = ships[ship_name]
-                x, y = player2grid[row][col]
-                
-                is_horizontal = False
-                is_vertical = False
-                
-                if col + ship_size - 1 < cols:
-                    if all(p2gamelogic[row][col+i] == 'S' for i in range(ship_size)):
-                        is_horizontal = True
-                
-                if not is_horizontal and row + ship_size - 1 < rows:
-                    if all(p2gamelogic[row+i][col] == 'S' for i in range(ship_size)):
-                        is_vertical = True
-                
-                if is_horizontal:
-                    orientation = "H"
-                    ship_cells = [(row, col+i) for i in range(ship_size)]
-                    window.blit(ship_images[ship_name][orientation], (x, y))
-                    drawn_cells.update(ship_cells)
-                elif is_vertical:
-                    orientation = "V"
-                    ship_cells = [(row+i, col) for i in range(ship_size)]
-                    window.blit(ship_images[ship_name][orientation], (x, y))
-                    drawn_cells.update(ship_cells)
-    
     for row in range(rows):
         for col in range(cols):
             if pgamelogic[row][col] == 'X':
                 x, y = player1grid[row][col]
                 window.blit(imagem_explosao, (x, y)) 
-
-
-            if p2gamelogic[row][col] == 'X':
+            elif p2gamelogic[row][col] == 'X':
                 x, y = player2grid[row][col]
                 window.blit(imagem_explosao, (x, y))
+            elif pgamelogic[row][col] == 'A':
+                x, y = player1grid[row][col]
+                pygame.draw.circle(window, (0, 255, 255), (x + cellsize // 2, y + cellsize // 2), cellsize // 4)
+            elif p2gamelogic[row][col] == 'A':
+                x, y = player2grid[row][col]
+                pygame.draw.circle(window, (0, 255, 255), (x + cellsize // 2, y + cellsize // 2), cellsize // 4)
     
     for grid in [player1grid, player2grid]:
         for row in grid:
@@ -285,13 +263,8 @@ def validate_manual_placement(cells):
         return sorted(rows) == list(range(min(rows), max(rows) + 1))
     return False
 
-def check_victory(player_logic):
-
-    for row in player_logic:
-        for cell in row:
-            if cell == 'S':
-                return False
-    return True
+def check_victory(opponent_logic):
+    return not any(cell == 'S' for row in opponent_logic for cell in row)
 
 def show_victory_screen(window, player):
 
@@ -328,24 +301,24 @@ def resize_ship_images():
 
 ship_images = {
     "Submarino": {
-        "H": pygame.image.load("batalha_naval_pygame/images/barco 2 horizontal.jpg").convert_alpha(),
-        "V": pygame.transform.rotate(pygame.image.load("batalha_naval_pygame/images/barco 2 horizontal.jpg").convert_alpha(), -90)
+        "H": pygame.image.load("images/barco 2 horizontal png.png").convert_alpha(),
+        "V": pygame.transform.rotate(pygame.image.load("images/barco 2 horizontal png.png").convert_alpha(), -90)
     },
     "Destroyer": {
-        "H": pygame.image.load("batalha_naval_pygame/images/barco 1 horizontal.jpg").convert_alpha(),
-        "V": pygame.transform.rotate(pygame.image.load("batalha_naval_pygame/images/barco 1 horizontal.jpg").convert_alpha(), -90)
+        "H": pygame.image.load("images/barco 1 horizontal png.png").convert_alpha(),
+        "V": pygame.transform.rotate(pygame.image.load("images/barco 1 horizontal png.png").convert_alpha(), -90)
         },
     "Cruzador": {
-        "H": pygame.image.load("batalha_naval_pygame/images/barco 3 horizontal.jpg").convert_alpha(),
-        "V": pygame.transform.rotate(pygame.image.load("batalha_naval_pygame/images/barco 3 horizontal.jpg").convert_alpha(), -90) 
+        "H": pygame.image.load("images/barco 3 horizontal png.png").convert_alpha(),
+        "V": pygame.transform.rotate(pygame.image.load("images/barco 3 horizontal png.png").convert_alpha(), -90) 
         },
     "Couraçado": {
-        "H": pygame.image.load("batalha_naval_pygame/images/barco 4 horizontal.jpg").convert_alpha(),
-        "V": pygame.transform.rotate(pygame.image.load("batalha_naval_pygame/images/barco 4 horizontal.jpg").convert_alpha(), -90)
+        "H": pygame.image.load("images/barco 4 horizontal png.png").convert_alpha(),
+        "V": pygame.transform.rotate(pygame.image.load("images/barco 4 horizontal png.png").convert_alpha(), -90)
         },
     "Porta-aviões": {
-        "H": pygame.image.load("batalha_naval_pygame/images/barco 5 horizontal.jpg").convert_alpha(),
-        "V": pygame.transform.rotate(pygame.image.load("batalha_naval_pygame/images/barco 5 horizontal.jpg").convert_alpha(), -90)
+        "H": pygame.image.load("images/barco 5 horizontal png.png").convert_alpha(),
+        "V": pygame.transform.rotate(pygame.image.load("images/barco 5 horizontal png.png").convert_alpha(), -90)
         },
     
 }
@@ -374,8 +347,10 @@ printgamelogic(pgamelogic, p2gamelogic)
 for player, (grid, logic) in enumerate([(pgamegrid, pgamelogic), (p2gamegrid, p2gamelogic)], start=1):
     for ship_name, ship_size in ships.items():
         place_ship(grid, logic, ship_name, ship_size, player)
-        showgrid(screen, cellsize, pgamegrid, p2gamegrid,pgamelogic,p2gamelogic, rows, cols)
+        showgrid(screen, cellsize, pgamegrid, p2gamegrid, pgamelogic, p2gamelogic, rows, cols)
         pygame.display.update()
+
+show_ships = False
 
 message = "Clique para Atirar!"
 current_player = 1
@@ -397,7 +372,7 @@ while running:
                 target_grid = pgamegrid 
                 target_logic = pgamelogic
                 player_grid = p2gamegrid 
-    
+                
             for rowidx, row in enumerate(target_grid):
                 for colidx, (x, y) in enumerate(row):
                     if x <= mouse[0] <= x + cellsize and y <= mouse[1] <= y + cellsize:
@@ -409,7 +384,8 @@ while running:
                             target_logic[rowidx][colidx] = 'A'
                             explosao_sound.play()
                             draw_chat(screen, f"Jogador {current_player} errou. Troca de jogador!", current_player)
-                            current_player = 2 if current_player == 1 else 1 
+                            pygame.draw.circle(screen, (0, 255, 255), (x + cellsize // 2, y + cellsize // 2), cellsize // 4)
+                            current_player = 2 if current_player == 1 else 1
 
                         pygame.display.update()  
                         pygame.time.wait(200)  
@@ -417,13 +393,12 @@ while running:
 
         showgrid(screen, cellsize, pgamegrid, p2gamegrid, pgamelogic, p2gamelogic, rows, cols)
 
-    if check_victory(pgamelogic):
+    if current_player == 1 and check_victory(p2gamelogic):
         show_victory_screen(screen, 1)
-        break 
-    elif check_victory(p2gamelogic):
-        show_victory_screen(screen, 2)
-        break 
-
+        break
+    elif current_player == 2 and check_victory(pgamelogic): 
+        show_victory_screen(screen, 2)  
+        break
     font = pygame.font.SysFont(None, 27)
     display_message = f"É a vez do Jogador {current_player}. {message}"
     chat_rect = pygame.Rect(50, 650, 1180, 37)
