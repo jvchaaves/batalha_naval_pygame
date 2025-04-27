@@ -4,7 +4,7 @@ import cores
 pygame.init()
 
 def desenhar_botao(screen, cor, rect, raio_borda, largura_borda):
-    pygame.draw.rect(screen, (0, 0, 0), rect, border_radius=raio_borda)
+    pygame.draw.rect(screen, cores.Preto, rect, border_radius=raio_borda)
     pygame.draw.rect(screen, cor, rect.inflate(-largura_borda*2, -largura_borda*2), border_radius=raio_borda)
 
 def CreateGameGrid(rows, cols, cellsize, pos):
@@ -21,25 +21,30 @@ def CreateGameGrid(rows, cols, cellsize, pos):
     return cordGrid
 
 def render_player_ships(window, grid, logic, ship_types, rows, cols, ships_dict, ship_images_dict):
-    drawn = set()
+    drawn = []
     for row in range(rows):
         for col in range(cols):
             if (row, col) in drawn:
                 continue
+
             if logic[row][col] == 'S' and ship_types[row][col] != ' ':
                 ship_name = ship_types[row][col]
                 ship_size = ships_dict[ship_name]
+                
                 if col + ship_size <= cols:
                     if all(ship_types[row][col+i] == ship_name for i in range(ship_size)):
                         orientation = "H"
                         window.blit(ship_images_dict[ship_name][orientation], grid[row][col])
-                        drawn.update((row, col+i) for i in range(ship_size))
+                        for i in range(ship_size):
+                            drawn.append((row, col+i))
                         continue
+
                 if row + ship_size <= rows:
                     if all(ship_types[row+i][col] == ship_name for i in range(ship_size)):
                         orientation = "V"
                         window.blit(ship_images_dict[ship_name][orientation], grid[row][col])
-                        drawn.update((row+i, col) for i in range(ship_size))
+                        for i in range(ship_size):
+                            drawn.append((row + i, col))
 
 def updategamelogic(rows, cols):
     return [[' ' for _ in range(cols)] for _ in range(rows)]
@@ -79,10 +84,10 @@ def showgrid(window, background, imagem_explosao, cellsize, player1grid, player2
                 window.blit(imagem_explosao, (x, y))
             elif pgamelogic[row][col] == 'A':
                 x, y = player1grid[row][col]
-                pygame.draw.circle(window, (0, 255, 255), (x + cellsize // 2, y + cellsize // 2), cellsize // 4)
+                pygame.draw.circle(window, cores.Azul, (x + cellsize // 2, y + cellsize // 2), cellsize // 4)
             elif p2gamelogic[row][col] == 'A':
                 x, y = player2grid[row][col]
-                pygame.draw.circle(window, (0, 255, 255), (x + cellsize // 2, y + cellsize // 2), cellsize // 4)
+                pygame.draw.circle(window, cores.Azul, (x + cellsize // 2, y + cellsize // 2), cellsize // 4)
 
     for grid in [player1grid, player2grid]:
         for row in grid:

@@ -91,6 +91,7 @@ ship_types_p2 = defs.updategamelogic(rows, cols)
 
 
 ships = {"Porta-aviões": 5, "Couraçado": 4, "Cruzador": 3, "Submarino": 3, "Destroyer": 2}
+
 ship_images = {
     "Submarino": {
         "H": pygame.image.load("images/barco 2 horizontal png.png").convert_alpha(),
@@ -113,6 +114,7 @@ ship_images = {
         "V": pygame.transform.rotate(pygame.image.load("images/barco 5 horizontal png.png").convert_alpha(), -90)
     }
 }
+
 defs.resize_ship_images(ship_images, cellsize, ships)
 
 
