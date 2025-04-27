@@ -155,7 +155,7 @@ def check_victory(opponent_logic):
     return not any(cell == 'S' for row in opponent_logic for cell in row)
 
 def show_victory_screen(window, player):
-    window.fill((0, 0, 0))
+    window.fill(cores.Preto)
     pygame.display.update()
     font = pygame.font.SysFont("Arial", 80, bold=True)
     text = font.render(f"JOGADOR {player} VENCEU!", True, (255, 215, 0))
